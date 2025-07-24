@@ -13,6 +13,7 @@ body {
   font-family: 'Glacial Indifference', sans-serif;
   background-color: #1e1e1e;
   color: #fff;
+  cursor: url('glitter-cursor.png'), auto;
 }
 
 header {
@@ -105,10 +106,6 @@ audio {
   color: #fff;
 }
 
-body {
-  cursor: url('glitter-cursor.png'), auto;
-}
-
 footer {
   text-align: center;
   padding: 1em;
@@ -171,9 +168,9 @@ function createCard() {
   div.className = 'card';
   div.innerHTML = `
     <input placeholder="Universidad" />
-   <input placeholder="Carrera" />
-   <input placeholder="Duración" />
-   <input placeholder="Fecha de Inscripción" />
+    <input placeholder="Carrera" />
+    <input placeholder="Duración" />
+    <input placeholder="Fecha de Inscripción" />
     <textarea placeholder="Notas"></textarea>
     <input placeholder="Link plan de estudios PDF" />
     <div class="actions">
@@ -207,23 +204,43 @@ function attachEvents() {
       attachEvents();
     };
   });
+
   container.querySelectorAll('.delete').forEach(btn => {
     btn.onclick = (e) => {
       e.target.closest('.card').remove();
       saveCards();
     };
   });
+
   container.querySelectorAll('.edit').forEach(btn => {
     btn.onclick = (e) => {
       const card = e.target.closest('.card');
-      const text = card.innerText.split('\n');
+      const lines = card.querySelectorAll('br');
+      const htmlParts = card.innerHTML.split('<br>');
+      const textData = htmlParts.map(line => {
+        const tempDiv = document.createElement('div');
+        tempDiv.innerHTML = line;
+        return tempDiv.textContent.trim();
+      });
+
+      // Extraemos cada valor guardado
+      const universidad = textData[0]?.replace('Universidad: ', '') || '';
+      const carrera = textData[1]?.replace('Carrera: ', '') || '';
+      const duracion = textData[2]?.replace('Duración: ', '') || '';
+      const fecha = textData[3]?.replace('Fecha de Inscripción: ', '') || '';
+      const notas = textData[4]?.replace('Notas: ', '') || '';
+
+      // Extraemos el href del link
+      const linkEl = card.querySelector('a');
+      const pdfLink = linkEl ? linkEl.href : '';
+
       card.innerHTML = `
-        <input value="${text[0].replace('Universidad: ','')}" />
-        <input value="${text[1].replace('Carrera: ','')}" />
-        <input value="${text[2].replace('Duración: ','')}" />
-         <input value="${text[3].replace('Fecha de Inscripción: ','')}" />
-        <textarea>${text[4].replace('Notas: ','')}</textarea>
-        <input placeholder="Link plan de estudios PDF" />
+        <input value="${universidad}" placeholder="Universidad" />
+        <input value="${carrera}" placeholder="Carrera" />
+        <input value="${duracion}" placeholder="Duración" />
+        <input value="${fecha}" placeholder="Fecha de Inscripción" />
+        <textarea>${notas}</textarea>
+        <input value="${pdfLink}" placeholder="Link plan de estudios PDF" />
         <div class="actions">
           <button class="save">🗁</button>
           <button class="delete">🗑</button>
