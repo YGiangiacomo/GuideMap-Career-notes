@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>GuideMap Career</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Agrandir:ital,wght@1,700&family=Glacial+Indifference&display=swap" rel="stylesheet">
+<style>
+body {
+  margin: 0;
+  font-family: 'Glacial Indifference', sans-serif;
+  background-color: #1e1e1e;
+  color: #fff;
+}
+
+header {
+  text-align: center;
+  font-family: 'Agrandir', sans-serif;
+  font-weight: 700;
+  font-style: italic;
+  font-size: 2em;
+  padding: 1em;
+  border-bottom: 2px solid #ccc;
+}
+
+main {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 2em;
+  padding: 2em;
+}
+
+.left {
+  max-width: 300px;
+  flex-shrink: 0;
+  margin-left: 2em;
+}
+
+.video-frame video {
+  width: 100%;
+  border-radius: 1em;
+}
+
+audio {
+  width: 100%;
+  margin-top: 1em;
+  border-radius: 2em;
+  background: #444;
+}
+
+.right {
+  flex: 1;
+  max-width: 600px;
+  margin: 0 auto;
+  position: relative;
+}
+
+#add-card {
+  position: fixed;
+  right: 2em;
+  top: 50%;
+  transform: translateY(-50%);
+  background: #c9a3b0;
+  border: none;
+  border-radius: 50%;
+  width: 60px;
+  height: 60px;
+  font-size: 2em;
+  color: #fff;
+  cursor: pointer;
+}
+
+.card {
+  background: #555;
+  border-radius: 2em;
+  padding: 2em;
+  margin-bottom: 1em;
+}
+
+.card input, .card textarea {
+  width: 100%;
+  margin: 0.5em 0;
+  border-radius: 1em;
+  border: none;
+  padding: 0.8em;
+}
+
+.card .actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.5em;
+  margin-top: 0.5em;
+}
+
+.card .actions button {
+  background: #c9a3b0;
+  border: none;
+  border-radius: 50%;
+  width: 30px;
+  height: 30px;
+  cursor: pointer;
+  color: #fff;
+}
+
+body {
+  cursor: url('glitter-cursor.png'), auto;
+}
+
+footer {
+  text-align: center;
+  padding: 1em;
+  font-size: 0.9em;
+  color: #aaa;
+}
+
+@media (max-width: 900px) {
+  main {
+    flex-direction: column;
+    align-items: center;
+  }
+  #add-card {
+    top: auto;
+    bottom: 2em;
+    transform: none;
+  }
+}
+</style>
+</head>
+<body>
+<header>
+  <h1>GuideMap Career</h1>
+</header>
+<main>
+  <div class="left">
+    <div class="video-frame">
+      <video src="video.mp4" autoplay muted loop></video>
+    </div>
+    <div class="audio-player">
+      <audio controls>
+        <source src="music.mp3" type="audio/mpeg" />
+        Tu navegador no soporta audio.
+      </audio>
+    </div>
+  </div>
+  <div class="right">
+    <div id="cards-container"></div>
+  </div>
+  <button id="add-card">+</button>
+</main>
+<footer>
+  by @Sara ⋆˚✿˖°
+</footer>
+<script>
+const container = document.getElementById('cards-container');
+const addBtn = document.getElementById('add-card');
+
+function saveCards() {
+  localStorage.setItem('cards', container.innerHTML);
+}
+
+function loadCards() {
+  container.innerHTML = localStorage.getItem('cards') || '';
+  attachEvents();
+}
+
+function createCard() {
+  const div = document.createElement('div');
+  div.className = 'card';
+  div.innerHTML = `
+    <input placeholder="Universidad" />
+    <input placeholder="Carrera" />
+    <textarea placeholder="Notas"></textarea>
+    <input placeholder="Link plan de estudios PDF" />
+    <div class="actions">
+      <button class="save">🗁</button>
+      <button class="delete">🗑</button>
+    </div>
+  `;
+  container.appendChild(div);
+  attachEvents();
+}
+
+function attachEvents() {
+  container.querySelectorAll('.save').forEach(btn => {
+    btn.onclick = (e) => {
+      const card = e.target.closest('.card');
+      const inputs = card.querySelectorAll('input, textarea');
+      const data = Array.from(inputs).map(input => input.value);
+      card.innerHTML = `
+        Universidad: ${data[0]}<br>
+        Carrera: ${data[1]}<br>
+        Notas: ${data[2]}<br>
+        <a href="${data[3]}" target="_blank">Plan de estudios (pdf)</a>
+        <div class="actions">
+          <button class="edit">✎</button>
+          <button class="delete">🗑</button>
+        </div>
+      `;
+      saveCards();
+      attachEvents();
+    };
+  });
+  container.querySelectorAll('.delete').forEach(btn => {
+    btn.onclick = (e) => {
+      e.target.closest('.card').remove();
+      saveCards();
+    };
+  });
+  container.querySelectorAll('.edit').forEach(btn => {
+    btn.onclick = (e) => {
+      const card = e.target.closest('.card');
+      const text = card.innerText.split('\n');
+      card.innerHTML = `
+        <input value="${text[0].replace('Universidad: ','')}" />
+        <input value="${text[1].replace('Carrera: ','')}" />
+        <textarea>${text[2].replace('Notas: ','')}</textarea>
+        <input placeholder="Link plan de estudios PDF" />
+        <div class="actions">
+          <button class="save">🗁</button>
+          <button class="delete">🗑</button>
+        </div>
+      `;
+      attachEvents();
+    };
+  });
+}
+
+addBtn.onclick = createCard;
+window.onload = loadCards;
+</script>
+</body>
+</html>
